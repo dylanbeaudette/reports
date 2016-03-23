@@ -242,7 +242,7 @@ print(xtable(this.data), type='html', incliude.colnames=TRUE, include.rownames=T
 
 <p>
 ```{r, echo=FALSE, results='asis'}
-this.data <- categorical.prop.table(f$ecositenm)
+this.data <- categorical.prop.table(f$ecositeid)
 this.align <- rep('c', times=ncol(this.data) + 1)
 
 print(xtable(this.data, align=this.align), type='html', include.rownames=FALSE, table.placement="H", caption.placement="top", html.table.attributes='cellpadding="3" cellspacing="3"')

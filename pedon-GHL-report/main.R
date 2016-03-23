@@ -22,7 +22,7 @@ library(rmarkdown)
 ## 3. load rules into NASIS
 
 ## manual reports
-comp <- 'pentz'
+comp <- 'amador'
 path <- 'reports/'
 filename <- paste(path, comp, '.html', sep='')
 save(comp, file='this.component.Rda')
