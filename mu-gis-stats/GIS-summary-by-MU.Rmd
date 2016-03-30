@@ -411,6 +411,7 @@ if(min(d.dist) < fuzz) {
   d.dist <- as.dist(d.dist)
 }
 
+## this can somtimes fail to converge, consider using alternate algorithm
 # ordination via sammon mapping
 set.seed(10101001)
 d.sammon <- sammon(d.dist)
