@@ -8,9 +8,9 @@
 ## data sources
 
 # raster data
-raster.list <- list(`Mean Annual Air Temperature (deg C)`=raster('E:/gis_data/prism/tavg_1981_2010.tif'), 
+raster.list <- list(`Mean Annual Air Temperature (deg C)`=raster('E:/gis_data/prism/final_MAAT_800m.tif'), 
                     `Mean Annual Precipitation (mm)`=raster('E:/gis_data/prism/final_MAP_mm_800m.tif'),
-                    `Effective Precipitation (mm)`=raster('E:/gis_data/prism/annual_waterbudget800.tif'),
+                    `Effective Precipitation (mm)`=raster('E:/gis_data/prism/effective_precipitation_800m.tif'),
                     `Frost-Free Days`=raster('E:/gis_data/prism/ffd_mean_800m.tif'),
                     `Growing Degree Days (deg C)`=raster('E:/gis_data/prism/gdd_mean_800m.tif'),
                     `Elevation (m)`=raster('E:/gis_data/ca630/ca630_elev/hdr.adf'),

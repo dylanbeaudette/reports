@@ -303,7 +303,7 @@ tps <- list(box.umbrella=list(col=grey(0.4)),
 						plot.symbol=list(col=grey(0.4), cex=0.5)
 )
 # plot
-print(bwplot(genhz ~ clay, data=h.i.sub, main=f, par.settings=tps) + layer(panel.text(x=h.i.sub$clay, y=jitter(as.numeric(h.i.sub$genhz), factor=1.5), label=h.i.sub$hzname, cex=0.75, font=2, col='RoyalBlue')))
+print(bwplot(genhz ~ clay, data=h.i.sub, main=f, par.settings=tps) + latticeExtra::layer(panel.text(x=h.i.sub$clay, y=jitter(as.numeric(h.i.sub$genhz), factor=1.5), label=h.i.sub$hzname, cex=0.75, font=2, col='RoyalBlue')))
 ```
 
 
