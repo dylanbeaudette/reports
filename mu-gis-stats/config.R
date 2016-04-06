@@ -13,12 +13,12 @@ raster.list <- list(`Mean Annual Air Temperature (deg C)`=raster('E:/gis_data/pr
                     `Effective Precipitation (mm)`=raster('E:/gis_data/prism/effective_precipitation_800m.tif'),
                     `Frost-Free Days`=raster('E:/gis_data/prism/ffd_mean_800m.tif'),
                     `Growing Degree Days (deg C)`=raster('E:/gis_data/prism/gdd_mean_800m.tif'),
-                    `Elevation (m)`=raster('E:/gis_data/ca630/ca630_elev/hdr.adf'),
-                    `Slope Gradient (%)`=raster('E:/gis_data/ca630/ca630_slope/hdr.adf'),
+                    `Elevation (m)`=raster('E:/gis_data/region-2-mu-analysis/elev_30.tif'),
+                    `Slope Gradient (%)`=raster('E:/gis_data/region-2-mu-analysis/slope_30.tif'),
                     `Annual Beam Radiance (MJ/sq.m)`=raster('E:/gis_data/ca630/beam_rad_sum_mj_30m.tif'),
                     `(Estimated) MAST (deg C)`=raster('E:/gis_data/ca630/mast-model.tif'),
-                    `Slope Aspect (degrees)`=raster('E:/gis_data/ca630/aspect_ca630/hdr.adf'),
-                    `Geomorphons`=raster('E:/gis_data/ca630/forms10.tif')
+                    `Slope Aspect (degrees)`=raster('E:/gis_data/region-2-mu-analysis/aspect_30.tif'),
+                    `Geomorphons`=raster('E:/gis_data/region-2-mu-analysis/forms30_region2.tif')
 )
 
 ### TODO Data from SDA: add from tutorial ...
