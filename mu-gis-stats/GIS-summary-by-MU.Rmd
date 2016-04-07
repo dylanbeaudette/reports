@@ -1,4 +1,5 @@
 ---
+title: null
 output:
   html_document:
     mathjax: null
@@ -10,8 +11,15 @@ output:
 ```{r setup, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 # setup
 library(knitr, quietly=TRUE)
-opts_chunk$set(message=FALSE, warning=FALSE, background='#F7F7F7', fig.align='center', fig.retina=2, dev='png', antialias='cleartype', tidy=FALSE, verbose=FALSE)
-options(width=100, stringsAsFactors=FALSE, cache=TRUE)
+
+# package options
+opts_knit$set(message=FALSE, warning=FALSE, verbose=FALSE, progress=FALSE)
+
+# chunk options
+opts_chunk$set(message=FALSE, warning=FALSE, background='#F7F7F7', fig.align='center', fig.retina=2, dev='png', antialias='cleartype', tidy=FALSE)
+
+# R session options
+options(width=100, stringsAsFactors=FALSE)
 
 
 ## custom functions
@@ -79,14 +87,13 @@ dynamicPar <- function(n, max.cols=3) {
 }
 
 # stat summary function
-f.summary <- function(i, p=c(0.05, 0.25, 0.5, 0.75, 0.95)) {
+f.summary <- function(i, p) {
   
   # remove NA
   v <- na.omit(i$value)
   
   # compute quantiles
   q <- quantile(v, probs=p)
-  q <- round(q)
   res <- data.frame(t(q))
   
   if(nrow(res) > 0) {
@@ -116,28 +123,21 @@ custom.bwplot <- function(x, coef=NA, do.out=FALSE) {
 }
 
 # load required packages
-library(rgdal)
-library(raster)
-library(plyr)
-library(reshape2)
-library(sharpshootR)
-library(latticeExtra)
-library(cluster)
-library(MASS)
-library(clhs)
+library(rgdal, quietly=TRUE)
+library(raster, quietly=TRUE)
+library(plyr, quietly=TRUE)
+library(reshape2, quietly=TRUE)
+library(sharpshootR, quietly=TRUE)
+library(latticeExtra, quietly=TRUE)
+library(cluster, quietly=TRUE)
+library(MASS, quietly=TRUE)
+library(clhs, quietly=TRUE)
 
 
 ## load local configuration
 source('config.R')
 ```
 
-Multiple Map Unit GIS Summary Report
-==============================================
-D.E. Beaudette and J. Wood
-<br>
-`r format(Sys.time(), "%Y-%m-%d")`
-
-This report is designed to provide statistical summaries of the environmental properties of one or more map units. Summaries are based on raster data extracted from fixed-density sampling (`r print(pts.per.acre)` samples / acre) of map unit polygons. Please see the document titled R-Based Map Unit Summary Report Introduction and Description for background and more information.
 
 ```{r, echo=FALSE}
 # if no filter, then keep all map units
@@ -215,28 +215,51 @@ d.mu <- ldply(l.mu)
 mu.area <- ldply(a.mu)
 
 # find special variables and split
+# gracefully handle missing rasters
+
 # aspect
 circ.vars <- names(raster.list)[grep('aspect', names(raster.list), ignore.case = TRUE)]
-if(length(circ.vars) > 0)
+if(length(circ.vars) > 0) {
+  do.aspect <- TRUE
   d.circ <- subset(d.mu, subset=variable %in% circ.vars)
+} else do.aspect <- FALSE
+  
 # geomorphons
-geomorphons.vars <- names(raster.list)[grep('geomorphons', names(raster.list), ignore.case = TRUE)]
-if(length(geomorphons.vars) > 0)
+geomorphons.vars <- names(raster.list)[grep('geomorphon', names(raster.list), ignore.case = TRUE)]
+if(length(geomorphons.vars) > 0) {
+  do.geomorphons <- TRUE
   d.geomorphons <- subset(d.mu, subset=variable == geomorphons.vars)
+} else do.geomorphons <- FALSE
+
+# curvature classes
+curvature.classes <- names(raster.list)[grep('curvature', names(raster.list), ignore.case = TRUE)]
+if(length(curvature.classes) > 0) {
+  do.curvature.classes <- TRUE
+  d.curvature.classes <- subset(d.mu, subset=variable == curvature.classes)
+} else do.curvature.classes <- FALSE
+  
 
 # everything else
-d.mu <- subset(d.mu, subset=! variable %in% c(circ.vars, geomorphons.vars))
+d.mu <- subset(d.mu, subset=! variable %in% c(circ.vars, geomorphons.vars, curvature.classes))
 ```
 
-### Input Data
+<br>
+<div style="text-align: center; border-top-style: solid; border-bottom-style: solid; border-top-width: 2px; border-bottom-width: 2px;"><span style="font-size: 200%; font-weight: bold;">Map units: `r paste(mu.set, collapse = ", ")`</span>
+<br><br>
+`r format(Sys.time(), "%Y-%m-%d")`</div>
 
-#### Map Unit Polygon Data Source
+<br>
+This report is designed to provide statistical summaries of the environmental properties of one or more map units. Summaries are based on raster data extracted from fixed-density sampling (`r print(pts.per.acre)` samples / acre) of map unit polygons. Please see the document titled R-Based Map Unit Summary Report Introduction and Description for background and more information.
+
+
+
+### Map Unit Polygon Data Source
 ```{r, echo=FALSE}
 fd <- data.frame(`MU Polygons`=mu.dsn, `File or Feature`=mu.layer)
 kable(fd, row.names = FALSE)
 ```
 
-#### Raster Data Sources
+### Raster Data Sources
 ```{r, echo=FALSE}
 fd <- sapply(raster.list, filename)
 fd <- gsub('\\\\', '/', fd)
@@ -278,14 +301,15 @@ densityplot(~ value | variable, groups=.id, data=d.mu, xlab='', ylab='', scales=
 ```
 
 ### Tabular Summaries
-Table of 5th, 25th, 50th, 75th and 95th [percentiles](https://en.wikipedia.org/wiki/Percentile), by variable.
+Table of select [percentiles](https://en.wikipedia.org/wiki/Percentile), by variable.
 
 ```{r, echo=FALSE, results='asis'}
 # summarize raster data for tabular output
-mu.stats <- ddply(d.mu, c('variable', '.id'), f.summary)
+mu.stats <- ddply(d.mu, c('variable', '.id'), f.summary, p=p.quantiles)
 
 # print medians
-kable(dcast(mu.stats, .id ~ variable, value.var = 'Q50'), row.names=FALSE, caption = 'Median Values', align = 'r')
+dg <- c(0, rep(2, times=length(unique(mu.stats$variable))))
+kable(dcast(mu.stats, .id ~ variable, value.var = 'Q50'), row.names=FALSE, caption = 'Median Values', align = 'r', digits=dg)
 ```
 
 ```{r, echo=FALSE, results='asis'}
@@ -295,13 +319,89 @@ l_ply(split(mu.stats, mu.stats$variable), function(i) {
   # remove variable column
   var.name <- unique(i$variable)
   i$variable <- NULL
-  print(kable(i, caption = var.name, row.names=FALSE, align = 'r'))
+  dg <- c(0, rep(2, times=length(p.quantiles)), 3)
+  print(kable(i, caption = var.name, row.names=FALSE, align = 'r', digits=dg))
 })
 
 ```
 
 
-### Geomophon Summary
+### Slope Aspect
+A graphical summary of slope aspect values using density and percentile estimation methods adapated to circular data. Spread and central tendency are depicted with a combination of (circular) kernel density estimate and arrows. The 50th percentile value is shown with a red arrow and the 10th and 90th percentile values are shown with gray arrows. Arrow length is proportional to the strength of directionality.
+
+```{r, echo=FALSE, results='hide', eval=do.aspect}
+## circular stats, by map unit
+d.circ.list <- split(d.circ, d.circ$.id)
+
+# this has to be called 2x, as we are adjusting the device settings on the fly
+fig.geom <- dynamicPar(length(d.circ.list))
+
+# update default device output size
+opts_chunk$set(fig.height=fig.geom[1] * 5) # rows
+opts_chunk$set(fig.width=fig.geom[2] * 5) # cols
+```
+
+
+```{r, echo=FALSE, results='asis', eval=do.aspect}
+# reset multi-figure plotting parameters
+dynamicPar(length(d.circ.list))
+
+res <- ldply(d.circ.list, function(i) {
+  mu <- unique(i$.id)
+  circ.stats <- aspect.plot(i$value, q=c(0.1, 0.5, 0.9), plot.title=mu, pch=NA, bg='RoyalBlue', col='black', arrow.col=c('grey', 'red', 'grey'), stack=FALSE, p.bw=90)
+  
+  return(round(circ.stats))
+})
+
+# tabular summary
+kable(res, align = 'r')
+```
+
+
+### Slope Shape (Curvature) Summary
+The classes were generated using a 5x5 moving window, from a regional 30m DEM. The precision may be limited, use with caution. See instructions for using your own (higher resolution) curvature classification raster.
+```{r, echo=FALSE, fig.width=12, fig.height=6, eval=do.curvature.classes}
+# set names: from Field Guide for description of soils
+# 1's place: profile curvature
+# 10's place: plan curvature
+#
+# data are reported down/across slope
+# L/L | L/V | L/C         22 | 32 | 12  
+# V/L | V/V | V/C   ----> 23 | 33 | 13
+# C/L | C/V | C/C         21 | 31 | 11
+#
+# order according to approximate "shedding"" -> "accumulating" gradient:
+# 'V/V', 'L/V', 'V/L', 'C/V', 'LL', 'C/L', 'V/C', 'L/C', 'C/C'
+#
+d.curvature.classes$value <- factor(d.curvature.classes$value, 
+                                    levels=c(33, 32, 23, 31, 22, 21, 13, 12, 11), 
+                                    labels = c('V/V', 'L/V', 'V/L', 'C/V', 'LL', 'C/L', 'V/C', 'L/C', 'C/C'))
+
+# tabulate and convert to proportions
+x <- xtabs(~ .id + value, data=d.curvature.classes)
+x <- round(sweep(x, MARGIN = 1, STATS = rowSums(x), FUN = '/'), 2)
+
+# print
+kable(x)
+
+# convert to long format for plotting
+x.long <- melt(x)
+# fix names: second column contains geomorphon labels
+names(x.long)[2] <- 'curvature.class'
+
+# make some colors, and set style
+cols.curvature.classes <- brewer.pal(9, 'Spectral')
+tps <- list(superpose.polygon=list(col=cols.curvature.classes, lwd=2, lend=2))
+
+# no re-ordering of musym
+trellis.par.set(tps)
+barchart(as.character(.id) ~ value, groups=curvature.class, data=x.long, horiz=TRUE, stack=TRUE, xlab='Proportion of Samples', scales=list(cex=1.5), key=simpleKey(space='top', columns=3, text=levels(x.long$curvature.class), rectangles = TRUE, points=FALSE))
+```
+
+
+
+
+### Geomophon Landform Classification
 Proportion of samples within each map unit that corrospond to 1 of 10 possible landform positions, as generated via [geomporphon](https://grass.osgeo.org/grass70/manuals/addons/r.geomorphon.html) algorithm.
 
 ```{r, echo=FALSE, eval=do.geomorphons}
@@ -345,33 +445,6 @@ barchart(.id ~ value, groups=geomorphon, data=x.long, horiz=TRUE, stack=TRUE, xl
 ```
 
 
-### Slope Aspect
-A graphical summary of slope aspect values using density and percentile estimation methods adapated to circular data. Spread and central tendency are depicted with a combination of (circular) kernel density estimate and arrows. The 50th percentile value is shown with a red arrow and the 5th and 95th percentile values are shown with gray arrows. Arrow length is proportional to the strength of directionality.
-
-```{r, echo=FALSE, results='hide'}
-## circular stats, by map unit
-d.circ.list <- split(d.circ, d.circ$.id)
-
-# this has to be called 2x, as we are adjusting the device settings on the fly
-fig.geom <- dynamicPar(length(d.circ.list))
-
-# update default device output size
-opts_chunk$set(fig.height=fig.geom[1] * 5) # rows
-opts_chunk$set(fig.width=fig.geom[2] * 5) # cols
-```
-
-
-```{r, echo=FALSE, results='hide'}
-# reset multi-figure plotting parameters
-dynamicPar(length(d.circ.list))
-
-res <- lapply(d.circ.list, function(i) {
-  mu <- unique(i$.id)
-  circ.stats <- aspect.plot(i$value, q=c(0.05, 0.5, 0.95), plot.title=mu, pch=NA, bg='RoyalBlue', col='black', arrow.col=c('grey', 'red', 'grey'), stack=FALSE, p.bw=90)
-  
-  print(round(circ.stats))
-})
-```
 
 
 ### Multivariate Summary
@@ -436,7 +509,7 @@ Results are saved in a folder called "output" in the working directory.
 if(!dir.exists('output')) dir.create('./output')
 
 # compute summaries
-poly.stats <- ddply(d.mu, c('pID', 'variable'), f.summary)
+poly.stats <- ddply(d.mu, c('pID', 'variable'), f.summary, p=p.quantiles)
 
 # convert to wide format, keeping median value
 poly.stats.wide.1 <- dcast(poly.stats, pID ~ variable, value.var = 'Q50')
