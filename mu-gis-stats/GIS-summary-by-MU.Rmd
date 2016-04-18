@@ -115,7 +115,7 @@ f.summary <- function(i, p) {
 
 # custom stats for box-whisker plot: 5th-25th-50th-75th-95th percentiles
 custom.bwplot <- function(x, coef=NA, do.out=FALSE) {
-  stats <- quantile(x, p=c(0.05, 0.25, 0.5, 0.75, 0.95))
+  stats <- quantile(x, p=c(0.05, 0.25, 0.5, 0.75, 0.95), na.rm = TRUE)
   n <- length(na.omit(x))
   out.low <- x[which(x < stats[1])]
   out.high <- x[which(x > stats[5])]
