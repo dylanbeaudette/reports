@@ -26,8 +26,8 @@ mu.layer <- 'ca630_a'
 # prefix variable names with gis_
 # these should all share the same CRS
 r <- list(
-  gis_ppt=raster('L:/Geodata/climate/raster/ppt_mm_1981_2010.tif'),
-  gis_tavg=raster('L:/Geodata/climate/raster/tavg_1981_2010.tif'),
+  gis_ppt=raster('L:/Geodata/climate/raster/final_MAP_mm_800m.tif'),
+  gis_tavg=raster('L:/Geodata/climate/raster/final_MAAT_800m.tif'),
   gis_ffd=raster('L:/Geodata/climate/raster/ffd_mean_800m.tif'),
   gis_gdd=raster('L:/Geodata/climate/raster/gdd_mean_800m.tif'),
   gis_elev=raster('L:/Geodata/DEM_derived/elevation_30m.tif'),
