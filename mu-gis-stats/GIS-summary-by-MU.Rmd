@@ -176,6 +176,7 @@ for(i in 1:length(nm)) {
 
 # iterate over map units and sample
 l.mu <- list() # samples
+l.unsampled <- list() # un-sampled polygon IDs
 a.mu <- list() # area stats
 for(mu.i in mu.set) {
   # get current polygons
@@ -184,11 +185,12 @@ for(mu.i in mu.set) {
   # sample each polygon at a constant density, 1 point per acre
   s <- constantDensitySampling(mu.i.sp, n.pts.per.ac=pts.per.acre, min.samples=1, polygon.id='pID')
   
+  # keep track of un-sampled polygons
+  l.unsampled[[mu.i]] <- setdiff(mu.i.sp$pID, unique(s$pID))
+  
   # make a unique sample ID, need this for conversion: long -> wide
   s$sid <- 1:nrow(s)
   
-  ## TODO: estimate effective DF from spatial data
-  # http://www.inside-r.org/packages/cran/SpatialPack/docs/modified.ttest
   # iterate over raster data
   l <- list()
   for(i in seq_along(raster.list)) {
@@ -202,8 +204,8 @@ for(mu.i in mu.set) {
   
   # compute area stats
   a <- sapply(slot(mu.i.sp, 'polygons'), slot, 'area') * 2.47e-4
-  a.stats <- round(c(quantile(a, probs=c(0.05, 0.25, 0.5, 0.75, 0.95)), sum(a)))
-  names(a.stats) <- c('Q5', 'Q25', 'Median', 'Q75', 'Q95', 'Total Area')
+  a.stats <- round(c(quantile(a, probs=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1)), sum(a), length(a), length(l.unsampled[[mu.i]])))
+  names(a.stats) <- c('Min', 'Q5', 'Q25', 'Median', 'Q75', 'Q95', 'Max', 'Total Area', 'Polygons', 'Not Sampled')
   
   # save and continue
   a.mu[[mu.i]] <- a.stats
@@ -212,6 +214,7 @@ for(mu.i in mu.set) {
 
 # assemble into DF
 d.mu <- ldply(l.mu)
+unsampled.idx <- unlist(l.unsampled)
 mu.area <- ldply(a.mu)
 
 # find special variables and split
@@ -244,7 +247,7 @@ d.mu <- subset(d.mu, subset=! variable %in% c(circ.vars, geomorphons.vars, curva
 ```
 
 <br>
-<div style="text-align: center; border-top-style: solid; border-bottom-style: solid; border-top-width: 2px; border-bottom-width: 2px;"><span style="font-size: 200%; font-weight: bold;">Map units: `r paste(mu.set, collapse = ", ")`</span>
+<div style="text-align: center; border-top-style: solid; border-bottom-style: solid; border-top-width: 2px; border-bottom-width: 2px;"><span style="font-size: 200%; font-weight: bold;">Map units (`r mu.col`): `r paste(mu.set, collapse = ", ")`</span>
 <br><br>
 `r format(Sys.time(), "%Y-%m-%d")`</div>
 
@@ -508,6 +511,12 @@ Results are saved in a folder called "output" in the working directory.
 # make an output dir if it doesn't exist
 if(!dir.exists('output')) dir.create('./output')
 
+# save SHP with any un-sampled polygons
+if(length(unsampled.idx) > 0) {
+  shp.fname <- paste0('un-sampled-', paste(mu.set, collapse='_'))
+  writeOGR(mu[unsampled.idx, ], dsn='output', layer=shp.fname, driver='ESRI Shapefile', overwrite_layer=TRUE)
+}
+
 # compute summaries
 poly.stats <- ddply(d.mu, c('pID', 'variable'), f.summary, p=p.quantiles)
 
@@ -547,6 +556,11 @@ mu@data <- join(mu@data, poly.stats.wide, by='pID', type='left')
 # save to file
 shp.fname <- paste0('polygons-with-stats-', paste(mu.set, collapse='_'))
 writeOGR(mu, dsn='output', layer=shp.fname, driver='ESRI Shapefile', overwrite_layer=TRUE)
+
+
+## TODO: how do you trap warnings within a .Rmd knitting session?
+# save warnings to log file
+# cat(warnings(), file = 'output/warning-log.txt')
 ```
 
 
