@@ -3,3 +3,5 @@
 ## TODO: 
   1. estimate effective DF from spatial data: 
     1. http://www.inside-r.org/packages/cran/SpatialPack/docs/modified.ttest
+  2. replace '.id' column with `mu.col`
+  

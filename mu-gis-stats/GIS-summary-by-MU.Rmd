@@ -204,8 +204,8 @@ for(mu.i in mu.set) {
   
   # compute area stats
   a <- sapply(slot(mu.i.sp, 'polygons'), slot, 'area') * 2.47e-4
-  a.stats <- round(c(quantile(a, probs=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1)), sum(a), length(a), length(l.unsampled[[mu.i]])))
-  names(a.stats) <- c('Min', 'Q5', 'Q25', 'Median', 'Q75', 'Q95', 'Max', 'Total Area', 'Polygons', 'Not Sampled')
+  a.stats <- round(c(quantile(a, probs=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1)), sum(a), nrow(s), length(a), length(l.unsampled[[mu.i]])))
+  names(a.stats) <- c('Min', 'Q5', 'Q25', 'Median', 'Q75', 'Q95', 'Max', 'Total Area', 'Samples', 'Polygons', 'Polygons Not Sampled')
   
   # save and continue
   a.mu[[mu.i]] <- a.stats
