@@ -292,7 +292,7 @@ kable(fd, row.names = FALSE)
 ### Area Summaries
 Consider increasing the sampling density in `config.R` if there are unsampled polygons.
 ```{r, echo=FALSE}
-kable(mu.area, caption='Map Unit Acreage by Polygon', align = 'r')
+kable(mu.area, caption='Map Unit Acreage by Polygon', align = 'r', col.names=c(mu.col, names(mu.area)[-1]))
 ```
 
 ### Modified Box and Whisker Plots
@@ -332,7 +332,8 @@ mu.stats <- ddply(d.mu, c('variable', '.id'), f.summary, p=p.quantiles)
 
 # print medians
 dg <- c(0, rep(2, times=length(unique(mu.stats$variable))))
-kable(dcast(mu.stats, .id ~ variable, value.var = 'Q50'), row.names=FALSE, caption = 'Median Values', align = 'r', digits=dg)
+mu.stats.wide <- dcast(mu.stats, .id ~ variable, value.var = 'Q50')
+kable(mu.stats.wide, row.names=FALSE, caption = 'Median Values', align = 'r', digits=dg, col.names=c(mu.col, names(mu.stats.wide)[-1]))
 ```
 
 ```{r, echo=FALSE, results='asis'}
@@ -343,7 +344,7 @@ l_ply(split(mu.stats, mu.stats$variable), function(i) {
   var.name <- unique(i$variable)
   i$variable <- NULL
   dg <- c(0, rep(2, times=length(p.quantiles)), 3)
-  print(kable(i, caption = var.name, row.names=FALSE, align = 'r', digits=dg))
+  print(kable(i, caption = var.name, row.names=FALSE, align = 'r', digits=dg, col.names=c(mu.col, names(i)[-1])))
 })
 
 ```
@@ -377,7 +378,7 @@ res <- ldply(d.circ.list, function(i) {
 })
 
 # tabular summary
-kable(res, align = 'r')
+kable(res, align = 'r', col.names=c(mu.col, names(res)[-1]))
 ```
 
 
