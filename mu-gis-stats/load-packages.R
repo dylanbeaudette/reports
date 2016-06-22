@@ -2,6 +2,7 @@
 
 ## get an older version of knitr
 ## work-around, until we get R 3.3.0
+# http://stackoverflow.com/questions/37241578/getting-a-parser-all-error-in-r-when-using-knitr-for-converting-a-basic-rmd-file
 packageurl <- "http://cran.r-project.org/src/contrib/Archive/knitr/knitr_1.12.tar.gz"
 install.packages(packageurl, repos=NULL, type="source")
 
