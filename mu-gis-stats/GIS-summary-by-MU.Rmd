@@ -405,10 +405,12 @@ kable(res, align = 'r', col.names=c(mu.col, names(res)[-1]))
 The classes were generated using a 5x5 moving window, from a regional 30m DEM. The precision may be limited, use with caution. See instructions for using your own (higher resolution) curvature classification raster.
 ```{r, echo=FALSE, fig.width=12, fig.height=6, eval=do.curvature.classes}
 # set names: from Field Guide for description of soils
+## source data: opposite convention
 # 1's place: profile curvature
 # 10's place: plan curvature
 #
-# data are reported down/across slope
+## adapted from above
+## data are reported down/across slope
 # L/L | L/V | L/C         22 | 32 | 12  
 # V/L | V/V | V/C   ----> 23 | 33 | 13
 # C/L | C/V | C/C         21 | 31 | 11
