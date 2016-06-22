@@ -530,15 +530,18 @@ poly.stats <- ddply(d.mu, c('pID', 'variable'), f.summary, p=p.quantiles)
 
 # convert to wide format, keeping median value
 poly.stats.wide.1 <- dcast(poly.stats, pID ~ variable, value.var = 'Q50')
-# convert to wide format, keeping log_abs_madm
-poly.stats.wide.2 <- dcast(poly.stats, pID ~ variable, value.var = 'log_abs_madm')
+# # convert to wide format, keeping log_abs_madm
+# poly.stats.wide.2 <- dcast(poly.stats, pID ~ variable, value.var = 'log_abs_madm')
 
 # add a suffix to variable names so that we can combine
 names(poly.stats.wide.1)[-1] <- paste0(names(poly.stats.wide.1)[-1], '_med')
-names(poly.stats.wide.2)[-1] <- paste0(names(poly.stats.wide.2)[-1], '_var')
+# names(poly.stats.wide.2)[-1] <- paste0(names(poly.stats.wide.2)[-1], '_var')
 
-# join median + QCD stats for each polygon
-poly.stats.wide <- join(poly.stats.wide.1, poly.stats.wide.2, by='pID')
+## TODO: pending further review
+# join median + MADM stats for each polygon
+# poly.stats.wide <- join(poly.stats.wide.1, poly.stats.wide.2, by='pID')
+poly.stats.wide <- poly.stats.wide.1
+
 
 # save
 poly.stats.fname <- paste0('output/poly-stats-', paste(mu.set, collapse='_'), '.csv')
