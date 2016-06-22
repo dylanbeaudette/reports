@@ -23,7 +23,7 @@ raster.list <- list(`Mean Annual Air Temperature (degrees C)`='E:/gis_data/prism
                     `(Estimated) MAST (degrees C)`='E:/gis_data/ca630/mast-model.tif',
                     `Slope Aspect (degrees)`='E:/gis_data/region-2-mu-analysis/aspect_30.tif',
                     `Geomorphon Landforms`='E:/gis_data/region-2-mu-analysis/forms30_region2.tif',
-                    `Curvature Classes`='E:/gis_data/region-2-mu-analysis/curvature_classes_30_class_region2.tif'
+                    `Curvature Classes`='E:/gis_data/ca630/curvature_classes_15.tif'
 )
 
 
