@@ -9,6 +9,9 @@ output:
 ---
 
 ```{r setup, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+## version number
+.report.version <- 1.0
+
 # setup
 library(knitr, quietly=TRUE)
 
@@ -96,15 +99,16 @@ f.summary <- function(i, p) {
   q <- quantile(v, probs=p)
   res <- data.frame(t(q))
   
+  ## TODO: implement better MADM processing and explanation  
   if(nrow(res) > 0) {
-    # MADM: MAD / median
-    # take the natural log of absolute values of MADM
-    res$log_abs_madm <- log(abs(mad(v) / median(v)))
-    # 0's become -Inf: convert to 0
-    res$log_abs_madm[which(is.infinite(res$log_abs_madm))] <- 0
+#     # MADM: MAD / median
+#     # take the natural log of absolute values of MADM
+#     res$log_abs_madm <- log(abs(mad(v) / median(v)))
+#     # 0's become -Inf: convert to 0
+#     res$log_abs_madm[which(is.infinite(res$log_abs_madm))] <- 0
     
     # assign reasonable names (quantiles)
-    names(res) <- c(paste0('Q', p * 100), 'log_abs_madm')
+    names(res) <- c(paste0('Q', p * 100))
     
     return(res)
   }
@@ -145,7 +149,7 @@ if(exists('mu.set')) {
   # filter
   mu <- mu[which(mu[[mu.col]] %in% mu.set), ]
 } else {
-  mu.set <- mu.set <- unique(mu[[mu.col]])
+  mu.set <- unique(mu[[mu.col]])
 }
 
 # nice colors
@@ -183,7 +187,7 @@ for(mu.i in mu.set) {
   mu.i.sp <- mu[which(mu[[mu.col]] == mu.i), ]
   
   # sample each polygon at a constant density, 1 point per acre
-  s <- constantDensitySampling(mu.i.sp, n.pts.per.ac=pts.per.acre, min.samples=1, polygon.id='pID')
+  s <- constantDensitySampling(mu.i.sp, n.pts.per.ac=pts.per.acre, min.samples=1, polygon.id='pID', iterations=20)
   
   # keep track of un-sampled polygons
   l.unsampled[[mu.i]] <- setdiff(mu.i.sp$pID, unique(s$pID))
@@ -248,7 +252,9 @@ d.mu <- subset(d.mu, subset=! variable %in% c(circ.vars, geomorphons.vars, curva
 
 <br>
 <div style="text-align: center; border-top-style: solid; border-bottom-style: solid; border-top-width: 2px; border-bottom-width: 2px;"><span style="font-size: 200%; font-weight: bold;">Map units (`r mu.col`): `r paste(mu.set, collapse = ", ")`</span>
-<br><br>
+<br>
+report version `r .report.version`
+<br>
 `r format(Sys.time(), "%Y-%m-%d")`</div>
 
 <br>
@@ -271,6 +277,7 @@ kable(fd, row.names = FALSE)
 ```
 
 ### Area Summaries
+Consider increasing the sampling density in `config.R` if there are unsampled polygons.
 ```{r, echo=FALSE}
 kable(mu.area, caption='Map Unit Acreage by Polygon', align = 'r')
 ```
@@ -469,7 +476,7 @@ d.sub <- na.omit(d.sub)
 # eval numerical distance
 d.dist <- daisy(d.sub[, -c(1:3)], stand=TRUE)
 
-# map distance matrix to 2D space via Sammon Mapping
+# map distance matrix to 2D space via MDS
 # there may be very tiny distances, add some noise
 fuzz <- 0.0001
 if(min(d.dist) < fuzz) {
@@ -478,26 +485,27 @@ if(min(d.dist) < fuzz) {
   d.dist <- as.dist(d.dist)
 }
 
-## this can somtimes fail to converge, consider using alternate algorithm
-# ordination via sammon mapping
-set.seed(10101001)
-d.sammon <- sammon(d.dist)
 
+# ordination via Kruskal's Non-metric Multidimensional Scaling
+set.seed(10101001)
+d.MDS <- isoMDS(d.dist)
+
+## TODO: there might be a better way to do this, ask Jay
 # contour density estimates
-s <- data.frame(x=d.sammon$points[, 1], y=d.sammon$points[, 2], .id=d.sub$.id)
+# add contours for fixed pct of data density using KDE
+# other ideas: https://stat.ethz.ch/pipermail/r-help/2012-March/305425.html
+s <- data.frame(x=d.MDS$points[, 1], y=d.MDS$points[, 2], .id=d.sub$.id)
 s <- split(s, s$.id)
 
 # plot
 par(mar=c(1,1,3,1))
-plot(d.sammon$points, type='n', axes=FALSE, asp=1)
+plot(d.MDS$points, type='n', axes=FALSE, asp=1)
 abline(h=0, v=0, lty=2, col='grey')
 
-## TODO: there might be a better way to do this, ask Jay
-# add contours for fixed pct of data density using KDE
-# other ideas: https://stat.ethz.ch/pipermail/r-help/2012-March/305425.html
+# add contours of prob density
 res <- lapply(s, kdeContours, prob=c(0.5))
 
-points(d.sammon$points, cex=0.45, col=cols[match(d.sub$.id, mu.set)], pch=16)
+points(d.MDS$points, cex=0.45, col=cols[match(d.sub$.id, mu.set)], pch=16)
 title('Ordination of Raster Samples (cLHS Subset) with 50% Density Contour')
 box()
 legend('topleft', legend=mu.set, lwd=NA, pch=16, col=cols[1:length(mu.set)], bty='n', cex=1.25)
