@@ -144,6 +144,11 @@ source('config.R')
 
 
 ```{r, echo=FALSE}
+# load map unit polygons from OGR data source
+mu <- try(readOGR(dsn=mu.dsn, layer=mu.layer, stringsAsFactors = FALSE))
+if(class(mu) == 'try-error')
+  stop(paste0('Cannot find map unit polygon file/feature: "', mu.dsn, ' / ', mu.layer, '"'), call. = FALSE)
+
 # if no filter, then keep all map units
 if(exists('mu.set')) {
   # filter
@@ -166,6 +171,14 @@ if(length(mu.set <= 7)) {
 # add a unique polygon ID
 mu$pID <- seq(from=1, to=length(mu))
 
+# load pointers to raster data
+raster.list <- lapply(raster.list, function(i) {
+  i <- try(raster(i))
+  if(class(i) == 'try-error')
+    stop(paste0('Cannot find raster file: ', i), call. = FALSE)
+  else
+    return(i)
+})
 
 # iterate over rasters and read into memory if possible
 nm <- names(raster.list)
@@ -459,7 +472,7 @@ barchart(.id ~ value, groups=geomorphon, data=x.long, horiz=TRUE, stack=TRUE, xl
 
 ### Multivariate Summary
 
-This plot displays the similarity of the map units across the set of environmental variables used in this report. The contours contain 50% of the points (sub-sampled via cLHS) in the 2D projection of multivariate space.
+This plot displays the similarity of the map units across the set of environmental variables used in this report. The contours contain 50% of the points (sub-sampled via [cLHS](https://en.wikipedia.org/wiki/Latin_hypercube_sampling)) in an optimal [2D projection](https://en.wikipedia.org/wiki/Multidimensional_scaling#Non-metric_multidimensional_scaling) of multivariate data space.
 
 
 ```{r, echo=FALSE, results='hide', fig.width=8, fig.height=8}
