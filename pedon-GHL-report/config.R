@@ -38,7 +38,7 @@ r <- list(
 )
 
 ## map unit data: load the official version
-mu <-  readOGR(dsn=mu.dsn, layer=mu.layer, encoding='encoding', stringsAsFactors=FALSE)
+mu <-  readOGR(dsn=mu.dsn, layer=mu.layer, stringsAsFactors=FALSE)
 
 # convert: character -> integer -> character
 # drops all bogus or undefined map units

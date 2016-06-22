@@ -48,6 +48,13 @@ kdeContours <- function(i, prob) {
 }
 
 
+# masking function applied to a "wide" data.frame of sampled raster data
+# function is applied column-wise
+mask.fun <- function(i) {
+  res <- i > quantile(i, prob=0.05, na.rm=TRUE) & i < quantile(i, prob=0.95, na.rm=TRUE)
+  return(res)
+}
+
 ## TODO: ID columns are hard-coded
 # cut down to reasonable size: using cLHS
 f.subset <- function(i, n) {
@@ -219,10 +226,22 @@ for(mu.i in mu.set) {
   d <- ldply(l)
   names(d)[1] <- 'variable'
   
-  # compute area stats
+  # extract polygon areas as acres
   a <- sapply(slot(mu.i.sp, 'polygons'), slot, 'area') * 2.47e-4
-  a.stats <- round(c(quantile(a, probs=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1)), sum(a), nrow(s), length(a), length(l.unsampled[[mu.i]])))
-  names(a.stats) <- c('Min', 'Q5', 'Q25', 'Median', 'Q75', 'Q95', 'Max', 'Total Area', 'Samples', 'Polygons', 'Polygons Not Sampled')
+  
+  # compute additional summaries
+  .quantiles <- quantile(a, probs=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
+  .total.area <- sum(a)
+  .samples <- nrow(s)
+  .mean.sample.density <- round(.samples / .total.area, 2)
+  .polygons <- length(a)
+  .unsampled.polygons <- length(l.unsampled[[mu.i]])
+  
+  # compile into single row
+  a.stats <- c(round(c(.quantiles, .total.area, .samples, .polygons, .unsampled.polygons)), .mean.sample.density)
+  
+  # fix name
+  names(a.stats) <- c('Min', 'Q5', 'Q25', 'Median', 'Q75', 'Q95', 'Max', 'Total Area', 'Samples', 'Polygons', 'Polygons Not Sampled', 'Mean Sample Dens.')
   
   # save and continue
   a.mu[[mu.i]] <- a.stats
@@ -290,7 +309,7 @@ kable(fd, row.names = FALSE)
 ```
 
 ### Area Summaries
-Consider increasing the sampling density in `config.R` if there are unsampled polygons.
+Consider increasing the sampling density (<b>`r pts.per.acre` points/ac.</b>) in `config.R` if there are unsampled polygons.
 ```{r, echo=FALSE}
 kable(mu.area, caption='Map Unit Acreage by Polygon', align = 'r', col.names=c(mu.col, names(mu.area)[-1]))
 ```
@@ -479,6 +498,12 @@ This plot displays the similarity of the map units across the set of environment
 ```{r, echo=FALSE, results='hide', fig.width=8, fig.height=8}
 # cast to wide format
 d.mu.wide <- dcast(d.mu, sid + .id ~ variable, value.var = 'value')
+
+# mask values outside of 5-95 percentile range
+# ommit first two columns,
+mask <- apply(d.mu.wide[, -c(1:2)], 2, mask.fun)
+row.idx <- which(apply(mask, 1, all))
+d.mu.wide <- d.mu.wide[row.idx, ]
 
 ## TODO: what is a reasonable sample size?
 # sub-sample via LHS: this takes time
