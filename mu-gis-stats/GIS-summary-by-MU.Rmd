@@ -446,7 +446,7 @@ barchart(as.character(.id) ~ value, groups=curvature.class, data=x.long, horiz=T
 
 
 
-### Geomophon Landform Classification
+### Geomorphon Landform Classification
 Proportion of samples within each map unit that corrospond to 1 of 10 possible landform positions, as generated via [geomporphon](https://grass.osgeo.org/grass70/manuals/addons/r.geomorphon.html) algorithm.
 
 ```{r, echo=FALSE, eval=do.geomorphons}
