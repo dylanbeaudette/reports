@@ -505,7 +505,7 @@ This plot displays the similarity of the map units across the set of environment
 #  * MASS::isoMDS() is the fastest, most stable algorithm I have tried
 # 2. tried `tsne` algorithm (https://lvdmaaten.github.io/tsne/), slow and runs out of memory with large datasets
 # 
-
+# TODO: combine with supervised classification for more informative eval of env. data / overlap
 
 # cast to wide format
 d.mu.wide <- dcast(d.mu, sid + .id ~ variable, value.var = 'value')
