@@ -1,4 +1,4 @@
-# Multiple Map Unit GIS Summary Report
+# Map Unit Comparison/Summary Report
 
 This report was designed to assist with comparisons between map unit concepts via sampling of various raster data sources within map unit polygons. Configuration of data sources is done within `config.R`. Example output [here](http://dylanbeaudette.github.io/static/GIS-summary-by-MU.html). Contact Dylan Beaudette (dylan.beaudette at ca.usda.gov) for questions or comments.
 
@@ -19,4 +19,5 @@ This report was designed to assist with comparisons between map unit concepts vi
 ## TODO: 
   1. estimate effective DF from spatial data: 
     1. http://www.inside-r.org/packages/cran/SpatialPack/docs/modified.ttest
+  2. test for "separation" between map units based on supervised classification results
   
