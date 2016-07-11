@@ -465,28 +465,34 @@ x <- round(sweep(x, MARGIN = 1, STATS = rowSums(x), FUN = '/'), 2)
 kable(x)
 ```
 
-```{r, echo=FALSE, eval=do.geomorphons}
+```{r, echo=FALSE, eval=do.geomorphons, fig.width=12, fig.height=6}
 # convert to long format for plotting
 x.long <- melt(x)
 # fix names: second column contains geomorphon labels
 names(x.long)[2] <- 'geomorphon'
 
-# cluster proportions
-x.d <- as.hclust(diana(daisy(x)))
-# re-order MU labels levels based on clustering
-x.long$.id <- factor(x.long$.id, levels=x.long$.id[x.d$order])
-```
-
-```{r, echo=FALSE, fig.width=12, fig.height=6, eval=do.geomorphons}
 # make some colors, and set style
 cols.geomorphons <- c('grey', brewer.pal(9, 'Spectral'))
 tps <- list(superpose.polygon=list(col=cols.geomorphons, lwd=2, lend=2))
 
+# clustering of proportions only works with >1 group
+if(length(unique(x.long$.id)) > 1) {
+  # cluster proportions
+  x.d <- as.hclust(diana(daisy(x)))
+  # re-order MU labels levels based on clustering
+  x.long$.id <- factor(x.long$.id, levels=x.long$.id[x.d$order])
+  
+  # musym are re-ordered according to clustering
+  trellis.par.set(tps)
+  barchart(.id ~ value, groups=geomorphon, data=x.long, horiz=TRUE, stack=TRUE, xlab='Proportion of Samples', scales=list(cex=1.5), key=simpleKey(space='top', columns=5, text=levels(x.long$geomorphon), rectangles = TRUE, points=FALSE), legend=list(right=list(fun=dendrogramGrob, args=list(x = as.dendrogram(x.d), side="right", size=10))))
+} else {
+  # re-order MU labels levels based on clustering
+  x.long$.id <- factor(x.long$.id)
+  
+  trellis.par.set(tps)
+  barchart(.id ~ value, groups=geomorphon, data=x.long, horiz=TRUE, stack=TRUE, xlab='Proportion of Samples', scales=list(cex=1.5), key=simpleKey(space='top', columns=5, text=levels(x.long$geomorphon), rectangles = TRUE, points=FALSE))
+}
 
-## TODO: fix so that auto.key legend is integrated with dendrogramGrob
-# musym are re-ordered according to clustering
-trellis.par.set(tps)
-barchart(.id ~ value, groups=geomorphon, data=x.long, horiz=TRUE, stack=TRUE, xlab='Proportion of Samples', scales=list(cex=1.5), key=simpleKey(space='top', columns=5, text=levels(x.long$geomorphon), rectangles = TRUE, points=FALSE), legend=list(right=list(fun=dendrogramGrob, args=list(x = as.dendrogram(x.d), side="right", size=10))))
 ```
 
 
