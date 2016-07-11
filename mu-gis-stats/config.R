@@ -56,8 +56,7 @@ mu.dsn <- 'E:/gis_data/ca630/FG_CA630_OFFICIAL.gdb'
 # name of featureclass
 mu.layer <- 'ca630_a'
 # map unit symbols / keys to extract
-# mu.set <- c('5012', '5015', '5201', '7085', '7089', '7011')
-mu.set <- c('5012')
+mu.set <- c('5012', '5015', '5201', '7085', '7089', '7011')
 
 
 
