@@ -1,0 +1,38 @@
+                               levelName                                                   notes
+1  Suggested Directory Structure                                                                
+2   ¦--Davis Server                                                                             
+3   ¦   °--geodata/project data/                                                                
+4   ¦       ¦--MuSum_10m_MSSO/                                               DEM and derivatives
+5   ¦       ¦--MUSum_30m_SSR2/                                                                  
+6   ¦       ¦--MUSum_Curvature/                                                                 
+7   ¦       ¦--MUSum_Geomorphons/                                                               
+8   ¦       ¦--MUSum_PRISM/                                                                     
+9   ¦       °--MUSum_reports/                                                                   
+10  ¦--MSSO shared data drive                                                                   
+11  ¦   ¦--geodata/project data/                                                                
+12  ¦   ¦   ¦--MuSum_10m_MSSO/                                               DEM and derivatives
+13  ¦   ¦   ¦--MUSum_30m_SSR2/                                                                  
+14  ¦   ¦   ¦--MUSum_Curvature/                                                                 
+15  ¦   ¦   ¦--MUSum_Geomorphons/                                                               
+16  ¦   ¦   ¦--MUSum_PRISM/                                                                     
+17  ¦   ¦   °--MUSum_reports/                         these are the master copies for the office
+18  ¦   ¦       ¦--GIS-summary-by-MU.Rmd                                                        
+19  ¦   ¦       ¦--config.R                                                                     
+20  ¦   ¦       °--load-packages.R                                                              
+21  ¦   °--geodata/climate/PRISM/                                                               
+22  ¦       °--PRISM_800m/               copy files from MUSum_PRISM for use with other projects
+23  °--User Folder                                                                              
+24      °--Projects/                                                                            
+25          ¦--Correlation/                                                                     
+26          ¦--Images/                                                                          
+27          ¦--Lab/                                                                             
+28          ¦--Maps/                                                                            
+29          ¦   °--shape files/                                                                 
+30          ¦--MUDs/                                                                            
+31          ¦--Pedons/                                                                          
+32          ¦--Vegetation/                                                                      
+33          °--MUSum/                                                       local copy of report
+34              ¦--output/                                                    report output here
+35              ¦--GIS-summary-by-MU.Rmd                                  "run" this report file
+36              ¦--config.R                                      edit as needed for each project
+37              °--load-packages.R                                                              
