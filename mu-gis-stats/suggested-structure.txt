@@ -1,5 +1,3 @@
-
-> print(dt, 'notes')
                                levelName                                                   notes
 1  Suggested Directory Structure                                                                
 2   ¦--Davis Server                                                                             
@@ -39,5 +37,3 @@
 36              ¦--config.R                                      edit as needed for each project
 37              ¦--load-packages.R                                                              
 38              °--mu_polygons/                put input map unit polygon data here (.shp, .gdb)
-
-> sink()
