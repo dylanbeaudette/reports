@@ -20,4 +20,5 @@ This report was designed to assist with comparisons between map unit concepts vi
   1. estimate effective DF from spatial data: 
     1. http://www.inside-r.org/packages/cran/SpatialPack/docs/modified.ttest
   2. test for "separation" between map units based on supervised classification results
+  3. better tests for bugs related to small sample sizes and low variability
   
