@@ -10,7 +10,7 @@ output:
 
 ```{r setup, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 ## version number
-.report.version <- 1.2
+.report.version <- 1.3
 
 # setup
 library(knitr, quietly=TRUE)
@@ -51,8 +51,9 @@ kdeContours <- function(i, prob) {
 
 # masking function applied to a "wide" data.frame of sampled raster data
 # function is applied column-wise
+# note: using \leq and \geq for cases with very narrow distributions
 mask.fun <- function(i) {
-  res <- i > quantile(i, prob=0.01, na.rm=TRUE) & i < quantile(i, prob=0.99, na.rm=TRUE)
+  res <- i >= quantile(i, prob=0.05, na.rm=TRUE) & i <= quantile(i, prob=0.95, na.rm=TRUE)
   return(res)
 }
 
@@ -501,10 +502,10 @@ if(length(unique(x.long$.id)) > 1) {
 
 ### Multivariate Summary
 
-This plot displays the similarity of the map units across the set of environmental variables used in this report. The contours contain 50% of the points (sub-sampled via [cLHS](https://en.wikipedia.org/wiki/Latin_hypercube_sampling)) in an optimal [2D projection](https://en.wikipedia.org/wiki/Multidimensional_scaling#Non-metric_multidimensional_scaling) of multivariate data space. Map units with very low variation in environmental variables can result in tightly clustered points in the 2D projection. In these cases it may not be possible to generate a 50%-data contour.
+This plot displays the similarity of the map units across the set of environmental variables used in this report. The contours contain 50% of the points (sub-sampled via [cLHS](https://en.wikipedia.org/wiki/Latin_hypercube_sampling)) in an optimal [2D projection](https://en.wikipedia.org/wiki/Multidimensional_scaling#Non-metric_multidimensional_scaling) of multivariate data space. Map units with very low variation in environmental variables can result in tightly clustered points in the 2D projection. In these cases it may not be possible to generate a 50%-data contour. It is not possible to generate a multivariate summary when any sampled variable (e.g. slope) has a near-zero variance.
 
 
-```{r, echo=FALSE, results='hide', fig.width=8, fig.height=8}
+```{r, results='hide', echo=FALSE, fig.width=8, fig.height=8}
 ## notes:
 # 1. tried other MDS methods:
 #  * MASS::sammon() fails when there are duplicates in the initial configuration
@@ -517,63 +518,77 @@ This plot displays the similarity of the map units across the set of environment
 # cast to wide format
 d.mu.wide <- dcast(d.mu, sid + .id ~ variable, value.var = 'value')
 
-# mask values outside of 5-95 percentile range
-# ommit first two columns,
-mask <- apply(d.mu.wide[, -c(1:2)], 2, mask.fun)
-row.idx <- which(apply(mask, 1, all))
-d.mu.wide <- d.mu.wide[row.idx, ]
+# check SD of each column, by group
+sd.by.id <- ddply(d.mu.wide, '.id', function(i) {sapply(i[, -c(1:2)], sd, na.rm=TRUE)})
 
-## TODO: what is a reasonable sample size?
-# only sub-sample if there are "a lot" of samples
-if(nrow(d.mu.wide) > 1000) {
-  # sub-sample via LHS: this takes time
-d.sub <- ddply(d.mu.wide, '.id', f.subset, n=50)
+# if the SD of any column, within any group is < 1e5 then stop
+if(any(unlist(sd.by.id[, -1]) < 1e-5)) {
+  MDS.summary <- FALSE
 } else {
-  d.sub <- d.mu.wide
+  
+  MDS.summary <- TRUE
+  
+  ## TODO: this causes a lot of bugs, worth keeping?
+  # # mask values outside of 5-95 percentile range
+  # # ommit first two columns,
+  # mask <- apply(d.mu.wide[, -c(1:2)], 2, mask.fun)
+  # row.idx <- which(apply(mask, 1, all))
+  # d.mu.wide <- d.mu.wide[row.idx, ]
+  
+  ## TODO: what is a reasonable sample size?
+  # only sub-sample if there are "a lot" of samples
+  if(nrow(d.mu.wide) > 1000) {
+    # sub-sample via LHS: this takes time
+    d.sub <- ddply(d.mu.wide, '.id', f.subset, n=50)
+  } else {
+    d.sub <- d.mu.wide
+  }
+  
+  
+  ## NOTE: data with very low variability will cause warnings
+  # eval numerical distance, removing 'sid' and '.id' columns
+  d.dist <- daisy(d.sub[, -c(1:2)], stand=TRUE)
+  
+  # map distance matrix to 2D space via MDS
+  # there may be very tiny distances, add some noise
+  fuzz <- 0.0001
+  if(min(d.dist) < fuzz) {
+    d.dist <- as.matrix(d.dist)
+    d.dist[d.dist <= fuzz] <- fuzz
+    d.dist <- as.dist(d.dist)
+  }
+  
+  
+  # ordination via Kruskal's Non-metric Multidimensional Scaling
+  set.seed(10101001)
+  d.MDS <- isoMDS(d.dist)
+  
+  ## TODO: there might be a better way to do this, ask Jay
+  # contour density estimates
+  # add contours for fixed pct of data density using KDE
+  # other ideas: https://stat.ethz.ch/pipermail/r-help/2012-March/305425.html
+  s <- data.frame(x=d.MDS$points[, 1], y=d.MDS$points[, 2], .id=d.sub$.id)
+  s <- split(s, s$.id)
+  
+  # plot
+  par(mar=c(1,1,3,1))
+  plot(d.MDS$points, type='n', axes=FALSE, asp=1)
+  abline(h=0, v=0, lty=2, col='grey')
+  
+  # NOTE: lines are not added if data are too densely spaces for evaluation of requested prob. level 
+  # add contours of prob density
+  res <- lapply(s, kdeContours, prob=c(0.5))
+  
+  points(d.MDS$points, cex=0.45, col=cols[match(d.sub$.id, mu.set)], pch=16)
+  title('Ordination of Raster Samples (cLHS Subset) with 50% Density Contour')
+  box()
+  legend('topleft', legend=mu.set, lwd=NA, pch=16, col=cols[1:length(mu.set)], bty='n', cex=1.25)
 }
+```
 
-## TODO: is this needed?
-# remove NA
-d.sub <- na.omit(d.sub)
-
-## NOTE: data with very low variability will cause warnings
-# eval numerical distance, removing 'sid' and '.id' columns
-d.dist <- daisy(d.sub[, -c(1:2)], stand=TRUE)
-
-# map distance matrix to 2D space via MDS
-# there may be very tiny distances, add some noise
-fuzz <- 0.0001
-if(min(d.dist) < fuzz) {
-  d.dist <- as.matrix(d.dist)
-  d.dist[d.dist <= fuzz] <- fuzz
-  d.dist <- as.dist(d.dist)
-}
-
-
-# ordination via Kruskal's Non-metric Multidimensional Scaling
-set.seed(10101001)
-d.MDS <- isoMDS(d.dist)
-
-## TODO: there might be a better way to do this, ask Jay
-# contour density estimates
-# add contours for fixed pct of data density using KDE
-# other ideas: https://stat.ethz.ch/pipermail/r-help/2012-March/305425.html
-s <- data.frame(x=d.MDS$points[, 1], y=d.MDS$points[, 2], .id=d.sub$.id)
-s <- split(s, s$.id)
-
-# plot
-par(mar=c(1,1,3,1))
-plot(d.MDS$points, type='n', axes=FALSE, asp=1)
-abline(h=0, v=0, lty=2, col='grey')
-
-# NOTE: lines are not added if data are too densely spaces for evaluation of requested prob. level 
-# add contours of prob density
-res <- lapply(s, kdeContours, prob=c(0.5))
-
-points(d.MDS$points, cex=0.45, col=cols[match(d.sub$.id, mu.set)], pch=16)
-title('Ordination of Raster Samples (cLHS Subset) with 50% Density Contour')
-box()
-legend('topleft', legend=mu.set, lwd=NA, pch=16, col=cols[1:length(mu.set)], bty='n', cex=1.25)
+```{r, echo=FALSE}
+if(MDS.summary == FALSE)
+  print('Cannot create MDS plot: not enough variance within each map unit.')
 ```
 
 
