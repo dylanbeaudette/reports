@@ -10,7 +10,7 @@ output:
 
 ```{r setup, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 ## version number
-.report.version <- 1.3
+.report.version <- 1.4
 
 # setup
 library(knitr, quietly=TRUE)
@@ -449,7 +449,7 @@ barchart(as.character(.id) ~ value, groups=curvature.class, data=x.long, horiz=T
 
 
 ### Geomorphon Landform Classification
-Proportion of samples within each map unit that corrospond to 1 of 10 possible landform positions, as generated via [geomporphon](https://grass.osgeo.org/grass70/manuals/addons/r.geomorphon.html) algorithm.
+Proportion of samples within each map unit that corrospond to 1 of 10 possible landform positions, as generated via [geomorphon](https://grass.osgeo.org/grass70/manuals/addons/r.geomorphon.html) algorithm.
 
 ```{r, echo=FALSE, eval=do.geomorphons}
 ## TODO: convert proportions into signature
