@@ -26,3 +26,8 @@ This report was designed to assist with comparisons between map unit concepts vi
     + figure out reasonable heuristic (multi-variate CV?)
   4. drop some quantiles from tab. summaries and add mean, SD, CV
   5. check: installation of old knitr before installation of other packages correct?
+  
+## Report Distribtuion and Maintenance (ASAP)
+See ticket #173.
+
+  
