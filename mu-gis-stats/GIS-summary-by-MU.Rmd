@@ -10,7 +10,7 @@ output:
 
 ```{r setup, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 ## version number
-.report.version <- 1.4
+.report.version <- '1.4.1'
 
 # setup
 library(knitr, quietly=TRUE)
@@ -158,8 +158,13 @@ mu <- try(readOGR(dsn=mu.dsn, layer=mu.layer, stringsAsFactors = FALSE))
 if(class(mu) == 'try-error')
   stop(paste0('Cannot find map unit polygon file/feature: "', mu.dsn, ' / ', mu.layer, '"'), call. = FALSE)
 
+# just in case, coerce mu.col to character
+mu[[mu.col]] <- as.character(mu[[mu.col]])
+
 # if no filter, then keep all map units
 if(exists('mu.set')) {
+  # coerce mu.set to character just in case
+  mu.set <- as.character(mu.set)
   # filter
   mu <- mu[which(mu[[mu.col]] %in% mu.set), ]
 } else {
