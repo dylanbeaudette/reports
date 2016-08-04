@@ -24,4 +24,4 @@ This report was designed to assist with comparisons between map unit concepts vi
     + clhs() breaks when sd == 0
     + masking 5-95 pctile interval results in not enough data for MDS
     + figure out reasonable heuristic (multi-variate CV?)
-  
+  4. drop some quantiles from tab. summaries and add mean, SD, CV

@@ -337,7 +337,7 @@ panel=function(...) {
 
 
 ### Density Plots
-These plots are a smooth alternative ([denisty estimation](https://en.wikipedia.org/wiki/Density_estimation)) to the classic "binned"" ([histogram](https://en.wikipedia.org/wiki/Histogram)) approach to visualizing distributions. Peaks coorrospond to values that are most frequent within a dataset.
+These plots are a smooth alternative ([denisty estimation](https://en.wikipedia.org/wiki/Density_estimation)) to the classic "binned" ([histogram](https://en.wikipedia.org/wiki/Histogram)) approach to visualizing distributions. Peaks coorrospond to values that are most frequent within a dataset.
 
 
 ```{r, echo=FALSE, fig.width=8, fig.height=15}
