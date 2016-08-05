@@ -30,4 +30,6 @@ This report was designed to assist with comparisons between map unit concepts vi
 ## Report Distribtuion and Maintenance (ASAP)
 See ticket #173.
 
+Moving to `sharpshootR` package for testing.
+
   
