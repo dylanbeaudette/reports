@@ -10,7 +10,7 @@ output:
 
 ```{r setup, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 ## version number
-.report.version <- '1.4.1'
+.report.version <- '1.4.2'
 
 # setup
 library(knitr, quietly=TRUE)
@@ -259,6 +259,9 @@ for(mu.i in mu.set) {
 d.mu <- ldply(l.mu)
 unsampled.idx <- unlist(l.unsampled)
 mu.area <- ldply(a.mu)
+
+# remove missing values: these will cause densityplot() to fail
+d.mu <- na.omit(d.mu)
 
 # find special variables and split
 # gracefully handle missing rasters
