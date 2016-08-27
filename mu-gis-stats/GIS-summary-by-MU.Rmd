@@ -219,40 +219,51 @@ for(mu.i in mu.set) {
   # keep track of un-sampled polygons
   l.unsampled[[mu.i]] <- setdiff(mu.i.sp$pID, unique(s$pID))
   
-  # make a unique sample ID, need this for conversion: long -> wide
-  s$sid <- 1:nrow(s)
-  
-  # iterate over raster data
-  l <- list()
-  for(i in seq_along(raster.list)) {
-    i.name <- names(raster.list)[i]
-    l[[i.name]] <- data.frame(value=extract(raster.list[[i]], s), pID=s$pID, sid=s$sid)
+  ## ADDED 2016-08-27 to account for very small polygons
+  ## see related fix in constantDensitySampling
+  # if there are no samples, skip stats
+  if(is.null(s)) {
+    # save and continue
+    a.mu[[mu.i]] <- NULL
+    l.mu[[mu.i]] <- NULL
+    # print('breaking out of this iteration')
+    next
+  } else {
+    # make a unique sample ID, need this for conversion: long -> wide
+    s$sid <- 1:nrow(s)
+    
+    # iterate over raster data
+    l <- list()
+    for(i in seq_along(raster.list)) {
+      i.name <- names(raster.list)[i]
+      l[[i.name]] <- data.frame(value=extract(raster.list[[i]], s), pID=s$pID, sid=s$sid)
+    }
+    
+    # convert to DF and fix default naming of raster column
+    d <- ldply(l)
+    names(d)[1] <- 'variable'
+    
+    # extract polygon areas as acres
+    a <- sapply(slot(mu.i.sp, 'polygons'), slot, 'area') * 2.47e-4
+    
+    # compute additional summaries
+    .quantiles <- quantile(a, probs=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
+    .total.area <- sum(a)
+    .samples <- nrow(s)
+    .mean.sample.density <- round(.samples / .total.area, 2)
+    .polygons <- length(a)
+    .unsampled.polygons <- length(l.unsampled[[mu.i]])
+    
+    # compile into single row
+    a.stats <- c(round(c(.quantiles, .total.area, .samples, .polygons, .unsampled.polygons)), .mean.sample.density)
+    
+    # fix name
+    names(a.stats) <- c('Min', 'Q5', 'Q25', 'Median', 'Q75', 'Q95', 'Max', 'Total Area', 'Samples', 'Polygons', 'Polygons Not Sampled', 'Mean Sample Dens.')
+    
+    # save and continue
+    a.mu[[mu.i]] <- a.stats
+    l.mu[[mu.i]] <- d
   }
-  
-  # convert to DF and fix default naming of raster column
-  d <- ldply(l)
-  names(d)[1] <- 'variable'
-  
-  # extract polygon areas as acres
-  a <- sapply(slot(mu.i.sp, 'polygons'), slot, 'area') * 2.47e-4
-  
-  # compute additional summaries
-  .quantiles <- quantile(a, probs=c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1))
-  .total.area <- sum(a)
-  .samples <- nrow(s)
-  .mean.sample.density <- round(.samples / .total.area, 2)
-  .polygons <- length(a)
-  .unsampled.polygons <- length(l.unsampled[[mu.i]])
-  
-  # compile into single row
-  a.stats <- c(round(c(.quantiles, .total.area, .samples, .polygons, .unsampled.polygons)), .mean.sample.density)
-  
-  # fix name
-  names(a.stats) <- c('Min', 'Q5', 'Q25', 'Median', 'Q75', 'Q95', 'Max', 'Total Area', 'Samples', 'Polygons', 'Polygons Not Sampled', 'Mean Sample Dens.')
-  
-  # save and continue
-  a.mu[[mu.i]] <- a.stats
-  l.mu[[mu.i]] <- d
 }
 
 # assemble into DF
