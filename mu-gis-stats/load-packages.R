@@ -1,7 +1,7 @@
 ## you need all of these packages to run the report
 
 # packages + deps from CRAN
-packages.to.get <- c('knitr', 'rmarkdown', 'rgdal', 'raster', 'plyr', 'reshape2', 'aqp', 'soilDB', 'sharpshootR', 'latticeExtra', 'clhs', 'devtools')
+packages.to.get <- c('knitr', 'rmarkdown', 'rgdal', 'raster', 'plyr', 'reshape2', 'aqp', 'soilDB', 'sharpshootR', 'latticeExtra', 'clhs', 'devtools', 'rgeos')
 res <- sapply(packages.to.get, install.packages, dep=TRUE)
 
 # latest versions from GitHub
