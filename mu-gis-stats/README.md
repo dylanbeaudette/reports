@@ -1,3 +1,13 @@
+
+# WARNING !
+
+The current version of this idea is now part of the [`soilReports` package](https://github.com/ncss-tech/soilReports).
+
+THERE WILL BE NO FURTHER DEVELOPMENT HERE
+
+  
+
+
 # Map Unit Comparison/Summary Report
 
 This report was designed to assist with comparisons between map unit concepts via sampling of various raster data sources within map unit polygons. Configuration of data sources is done within `config.R`. Example output [here](http://dylanbeaudette.github.io/static/GIS-summary-by-MU.html). Contact Dylan Beaudette (dylan.beaudette at ca.usda.gov) for questions or comments.
@@ -27,9 +37,5 @@ This report was designed to assist with comparisons between map unit concepts vi
   4. drop some quantiles from tab. summaries and add mean, SD, CV
   5. test for raster extents smaller than MU extent
   
-## Report Distribtuion and Maintenance (ASAP)
-See ticket #173.
 
-BE SURE TO merge changes with [`soilReports` package](https://github.com/ncss-tech/soilReports) for testing.
 
-  
